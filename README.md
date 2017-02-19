@@ -13,21 +13,21 @@ static parse(query: string, dbType: string, delimiter: string): Array<string> {
 
 It expects 3 parameters ;
 	
-        *query* : SQL query
+*query* : SQL query
         
-        *dbType* : mysql, pg or mssql
+*dbType* : mysql, pg or mssql
         
-        *delimiter*: semicolon (;) for MySQL and PostgreSQL, 'GO' for Microsoft SQL Server
+*delimiter*: semicolon (;) for MySQL and PostgreSQL, 'GO' for Microsoft SQL Server
 
 TSParser can parse;
         
-        *SQL Queries*
+*SQL Queries*
         
-        *Stored procedures, functions, views, etc..*
+*Stored procedures, functions, views, etc..*
         
-        *PostgreSQL's tags (like $mytag$ )*
+*PostgreSQL's tags (like $mytag$ )*
         
-        *MySQL's 'DELIMITER’*
+*MySQL's 'DELIMITER’*
 
 # MySQL Example
 In MySQL, semicolon (;) is default delimiter.
