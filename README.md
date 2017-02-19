@@ -12,14 +12,21 @@ static parse(query: string, dbType: string, delimiter: string): Array<string> {
 ```
 
 It expects 3 parameters ;
-	**query** : SQL query
+	
+        **query** : SQL query
+        
         **dbType** : mysql, pg or mssql
+        
         **delimiter**: semicolon (;) for MySQL and PostgreSQL, 'GO' for Microsoft SQL Server
 
 TSParser can parse;
+        
         **SQL Queries**
+        
         **Stored procedures, functions, views, etc..**
+        
         **PostgreSQL's tags (like $mytag$ )**
+        
         **MySQL's 'DELIMITER’**
 
 # MySQL Example
@@ -33,7 +40,9 @@ In MySQL, semicolon (;) is default delimiter.
 ```
 
 It will return an array with 2 items, items are; 
+
 `SELECT * FROM users`
+
 `SELECT * FROM user_details`
 
 ## MySQL Stored Procedure and Regular Queries
@@ -58,7 +67,9 @@ It will return an array with 3 items, items are;
       WHERE Continent = con;
   END
 ```
+
 `SELECT * FROM users`
+
 `SELECT * FROM user_details`
 
 # PostgreSQL Example
@@ -73,7 +84,9 @@ In PostgreSQL, semicolon (;) is default delimiter.
 ```
 
 This will return an array with 2 items, items are; 
+
 `SELECT * FROM users`
+
 `SELECT * FROM user_details`
 
 ## PostgreSQL Function and Regular Queries
@@ -96,7 +109,9 @@ It will return an array with 3 items, items are;
         END;
 $$ LANGUAGE plpgsql
 ```
+
 `SELECT * FROM users`
+
 `SELECT * FROM user_details`
 
 # Microsoft SQL Server Example
@@ -113,7 +128,9 @@ In Microsoft SQL Server, GO keyword is default delimiter.
 ```
 
 This will return an array with 2 items, items are; 
+
 `SELECT * FROM users`
+
 `SELECT * FROM user_details`
 
 ##  Microsoft SQL Server Stored Procedure and Regular Queries
@@ -132,11 +149,13 @@ SELECT * FROM user_details;
 It will return an array with 3 items, items are; 
 
 ```
- CREATE PROCEDURE dbo.uspGetAddress @City nvarchar(30)
+CREATE PROCEDURE dbo.uspGetAddress @City nvarchar(30)
 AS
 SELECT * 
 FROM Person.Address
 WHERE City = @City;
 ```
+
 `SELECT * FROM users`
+
 `SELECT * FROM user_details`
