@@ -1,0 +1,39 @@
+{
+  "name": "sql-statement-parser",
+  "version": "1.0.0",
+  "description": "A simple parser to split multiple statement SQL queries to seperated statements for MySQL, PostgreSQL and Microsoft SQL Server",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TeamSQL/SQL-Statement-Parser.git"
+  },
+  "keywords": [
+    "sql",
+    "parser",
+    "multi",
+    "statement",
+    "split",
+    "seperate",
+    "statements",
+    "mysql",
+    "postgresql",
+    "sql",
+    "server"
+  ],
+  "author": "Can Abacigil <abacigil@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TeamSQL/SQL-Statement-Parser/issues"
+  },
+  "homepage": "https://github.com/TeamSQL/SQL-Statement-Parser#readme",
+  "devDependencies": {
+    "@types/node": "*",
+    "chai": "^3.5.0",
+    "chai-things": "^0.2.0",
+    "mocha": "^3.2.0",
+    "qunitjs": "^2.1.1"
+  }
+}
