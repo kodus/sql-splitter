@@ -1,4 +1,4 @@
-import { TSParser } from '../lib/TSParser';
+import { TSParser } from '../src/index';
 import * as Mocha from 'mocha'
 import * as chai from 'chai';
 

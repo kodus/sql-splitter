@@ -3,8 +3,12 @@
         "module": "commonjs",
         "target": "ES6",
         "types": [
-          "node"
+            "node"
         ],
-        "sourceMap": true
-    }
+        "declaration": true,
+        "outDir": "lib/"
+    },
+    "files": [
+            "./src/index.ts"
+        ]
 }

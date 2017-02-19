@@ -1,8 +1,12 @@
 {
-  "name": "sql-statement-parser",
+  "name": "tsparser",
   "version": "1.0.0",
   "description": "A simple parser to split multiple statement SQL queries to seperated statements for MySQL, PostgreSQL and Microsoft SQL Server",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "typings": "lib/index",
+  "files": [
+        "lib/"
+  ],
   "scripts": {
     "test": "mocha"
   },
