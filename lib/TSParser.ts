@@ -127,6 +127,9 @@ export class TSParser {
 
         }
         if (resultQueries.length == 0) {
+            if(query != null){
+                query = query.trim();
+            }
             resultQueries.push(query, null);
         }
 

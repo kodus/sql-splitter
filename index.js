@@ -17,7 +17,19 @@ SELECT * FROM userdetails;`;
         var mysqlQueryWithComments = `SELECT ';', '--', ';;;;' FROM test; -- comment
 -- comment 2
 SELECT name,surname FROM user_details;`;
-        var statements = TSParser_1.TSParser.parse(mysqlQueryWithComments, 'mysql', ';');
+        var mssqlQuery = 'SELECT * FROM users GO SELECT * FROM user_details';
+        var mssqlProcs = `CREATE PROCEDURE dbo.uspGetAddress @City nvarchar(30)
+AS
+SELECT * 
+FROM Person.Address
+WHERE City = @City;
+GO
+CREATE PROCEDURE dbo.uspGetAddress @City nvarchar(30)
+AS
+SELECT * 
+FROM Person.Address
+WHERE City = @City`;
+        var statements = TSParser_1.TSParser.parse(mssqlProcs, 'mssql', 'GO');
         statements.forEach(statement => {
             console.log(statement + '\nbitti');
         });
