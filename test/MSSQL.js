@@ -11,6 +11,15 @@ describe('MSSQL 2 Basic Queries', function () {
         chai.expect(result).have.members(expectedResult, 'Should be an array of string with 2 members.');
     });
 });
+describe('MSSQL Multi-statement', function () {
+    it('should return an array with 1 item', function () {
+        var query = 'SELECT * FROM users; SELECT * FROM user_details';
+        var expectedResult = [];
+        expectedResult.push('SELECT * FROM users; SELECT * FROM user_details');
+        var result = TSParser_1.TSParser.parse(query, 'mssql', 'GO');
+        chai.expect(result).have.members(expectedResult, 'Should be an array of string with 2 members.');
+    });
+});
 describe('MSSQL 2 Basic Queries - Syntax Error', function () {
     it('should not return an array with 2 items', function () {
         var query = 'SELECT * FROM users SELECT * FROM user_details;';
