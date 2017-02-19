@@ -4,6 +4,14 @@ A simple parser to split multiple statement SQL queries to separated statements 
 # What does it do and which database engines are supported?
 It supports MySQL, PostgreSQL and Microsoft SQL Server. Our parser splits multi-statement SQL queries into single statements.
 
+# Install via npm
+
+`npm install --save tsparser`
+
+# Import TSParser to your project
+
+`import {TSParser} from 'TSParser'`
+
 # TSParser.parse() function description
 ```
 static parse(query: string, dbType: string, delimiter: string): Array<string> {
