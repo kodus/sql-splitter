@@ -136,11 +136,15 @@ describe('MySQL Queries with Comments and String', function () {
     it('should return an array with 2 items', function () {
         var query: string = `SELECT ';', '--', ';;;;' FROM test; -- comment
 -- comment 2
+// comment other
+# comment
 SELECT name,surname FROM user_details;`;
         var expectedResult: Array<string> = [];
         expectedResult.push("SELECT ';', '--', ';;;;' FROM test");
         expectedResult.push(`-- comment
 -- comment 2
+// comment other
+# comment
 SELECT name,surname FROM user_details`);
         var result: Array<string> = TSParser.parse(query, 'mysql', ';');
         chai.expect(result).have.members(expectedResult, 'Should be an array of string with 2 members.');

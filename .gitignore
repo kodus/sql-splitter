@@ -37,6 +37,6 @@ jspm_packages
 .node_repl_history
 
 # JS Maps
-*/**.js.map
+**/**.js.map
 *.js.map
 typings
