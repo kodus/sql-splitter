@@ -35,10 +35,12 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceRoot}/index.ts",
+            "program": "${workspaceRoot}/playground.ts",
             "cwd": "${workspaceRoot}",
             "preLaunchTask": "tsc",
-            "outFiles": []
+            "outFiles": [
+                "${workspaceRoot}/lib/playground.js"
+            ]
         }
     ]
 }

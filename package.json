@@ -5,10 +5,11 @@
   "main": "lib/index.js",
   "typings": "lib/index",
   "files": [
-        "lib/"
+        "lib/index.d.ts",
+        "lib/index.js"
   ],
   "scripts": {
-    "test": "mocha"
+    "test": "mocha lib/test"
   },
   "repository": {
     "type": "git",

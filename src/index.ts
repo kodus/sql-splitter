@@ -1,7 +1,7 @@
 export class TSParser {
 
-    static parse(query: string, dbType: string, delimiter: string): Array<string> {
-        var queries: Array<string> = [];
+    static parse(query : string, dbType : string, delimiter : string) : Array < string > {
+        var queries: Array < string > = [];
         var flag = true;
         while (flag) {
             if (restOfQuery == null) {
@@ -23,8 +23,8 @@ export class TSParser {
         return queries;
     }
 
-    private static getStatements(query: string, dbType: string, delimiter: string): Array<string> {
-        var charArray: Array<string> = Array.from(query);
+    private static getStatements(query : string, dbType : string, delimiter : string) : Array < string > {
+        var charArray: Array < string > = Array.from(query);
         var previousChar: string = null;
         var nextChar: string = null;
         var isInComment: boolean = false;
@@ -34,7 +34,7 @@ export class TSParser {
         var isInTag: boolean = false;
         var tagChar: string = null;
 
-        var resultQueries: Array<string> = [];
+        var resultQueries: Array < string > = [];
         for (var index = 0; index < charArray.length; index++) {
 
             var char = charArray[index];
@@ -74,11 +74,11 @@ export class TSParser {
             }
 
             if (char.toLowerCase() == 'd' && isInComment == false && isInString == false) {
-                var delimiterResult = this.getDelimiter(query, dbType);
+                var delimiterResult = this.getDelimiter(index, query, dbType);
                 if (delimiterResult != null) {
                     // it's delimiter
-                    var delimiterSymbol: string = delimiterResult[0];
-                    var delimiterEndIndex: number = delimiterResult[1];
+                    var delimiterSymbol : string = delimiterResult[0];
+                    var delimiterEndIndex : number = delimiterResult[1];
                     query = query.substring(delimiterEndIndex);
                     resultQueries = this.getStatements(query, dbType, delimiterSymbol);
                     break;
@@ -113,13 +113,11 @@ export class TSParser {
 
             // it's a query, continue until you get delimiter hit
             if (char.toLowerCase() == delimiter.toLowerCase() && isInString == false && isInComment == false && isInTag == false) {
-                if (this.isGoDelimiter(dbType ,query, index) == false) {
+                if (this.isGoDelimiter(dbType, query, index) == false) {
                     continue;
                 }
                 var splittingIndex = index;
-                // if (delimiter == ";") {
-                //     splittingIndex = index + 1
-                // }
+                // if (delimiter == ";") {     splittingIndex = index + 1 }
                 resultQueries = this.getQueryParts(query, splittingIndex, delimiter);
                 break;
 
@@ -127,7 +125,7 @@ export class TSParser {
 
         }
         if (resultQueries.length == 0) {
-            if(query != null){
+            if (query != null) {
                 query = query.trim();
             }
             resultQueries.push(query, null);
@@ -136,11 +134,11 @@ export class TSParser {
         return resultQueries;
     }
 
-    private static getQueryParts(query: string, splittingIndex: number, delimiter: string): Array<string> {
+    private static getQueryParts(query : string, splittingIndex : number, delimiter : string) : Array < string > {
         var statement: string = query.substring(0, splittingIndex);
         var restOfQuery: string = query.substring(splittingIndex + delimiter.length);
-        var result: Array<string> = [];
-        if(statement != null){
+        var result: Array < string > = [];
+        if (statement != null) {
             statement = statement.trim();
         }
         result.push(statement);
@@ -148,16 +146,34 @@ export class TSParser {
         return result;
     }
 
-    private static getDelimiter(query: string, dbType: string): Array<any> {
-        if (dbType == 'mysql') {
-            var matchDelimiter = query.match(/^\s*(?:\bDELIMITER\b\s+(.+\s*)\s*)/i);
-            if (matchDelimiter != null && matchDelimiter.length > 1) {
-                var result: Array<any> = [];
-                var delimiterSymbol = matchDelimiter[1].trim();
-                var indexOfCmd = query.indexOf(delimiterSymbol);
-                result.push(delimiterSymbol);
-                result.push(indexOfCmd + delimiterSymbol.length);
-                return result;
+    private static getDelimiter(index : number, query : string, dbType : string) : Array < any > {
+        if(dbType == 'mysql') {
+            var delimiterKeyword = 'delimiter ';
+            var delimiterLength = delimiterKeyword.length;
+            var parsedQueryAfterIndexOriginal = query.substring(index);
+            var indexOfDelimiterKeyword = parsedQueryAfterIndexOriginal
+                .toLowerCase()
+                .indexOf(delimiterKeyword);
+            if (indexOfDelimiterKeyword == 0) {
+                var parsedQueryAfterIndex = query.substring(index);
+                var indexOfNewLine = parsedQueryAfterIndex.indexOf('\n');
+                if(indexOfNewLine == -1){
+                    indexOfNewLine = query.length;
+                }
+                parsedQueryAfterIndex = parsedQueryAfterIndex.substring(0, indexOfNewLine);
+                parsedQueryAfterIndex = parsedQueryAfterIndex.substring(delimiterLength);
+                var delimiterSymbol = parsedQueryAfterIndex.trim();
+                delimiterSymbol = this.clearTextUntilComment(delimiterSymbol, dbType);
+                if (delimiterSymbol != null) {
+                    delimiterSymbol = delimiterSymbol.trim();
+                    var delimiterSymbolEndIndex = parsedQueryAfterIndexOriginal.indexOf(delimiterSymbol) + index + delimiterSymbol.length;
+                    var result : Array < any > = [];
+                    result.push(delimiterSymbol);
+                    result.push(delimiterSymbolEndIndex);
+                    return result;
+                } else {
+                    return null;
+                }
 
             } else {
                 return null;
@@ -165,11 +181,11 @@ export class TSParser {
         }
     }
 
-    private static getTag(query: string, dbType: string): Array<any> {
-        if (dbType == 'pg') {
+    private static getTag(query : string, dbType : string) : Array < any > {
+        if(dbType == 'pg') {
             var matchTag = query.match(/^(\$[a-zA-Z]*\$)/i);
             if (matchTag != null && matchTag.length > 1) {
-                var result: Array<any> = [];
+                var result : Array < any > = [];
                 var tagSymbol = matchTag[1].trim();
                 var indexOfCmd = query.indexOf(tagSymbol);
                 result.push(tagSymbol);
@@ -182,8 +198,8 @@ export class TSParser {
 
     }
 
-    private static isGoDelimiter(dbType : string, query: string, index: number): boolean {
-        if (dbType == 'mssql') {
+    private static isGoDelimiter(dbType : string, query : string, index : number) : boolean {
+        if(dbType == 'mssql') {
             var match = /(?:\bgo\b\s*)/i.exec(query);
             if (match != null && match.index == index) {
                 return true;
@@ -192,4 +208,38 @@ export class TSParser {
             }
         }
     }
+
+    private static clearTextUntilComment(text : string, dbType : string) : string {
+        var previousChar: string = null;
+        var nextChar: string = null;
+        var charArray: Array < string > = Array.from(text);
+        var clearedText: string = null;
+        for (var index = 0; index < charArray.length; index++) {
+
+            var char = charArray[index];
+            if (index > 0) {
+                previousChar = charArray[index - 1];
+            }
+
+            if (index < charArray.length) {
+                nextChar = charArray[index + 1];
+            }
+
+            if (((char == '#' && nextChar == ' ') || (char == '-' && nextChar == '-') || (char == '/' && nextChar == '*'))) {
+                break;
+            } else {
+                if (clearedText == null) {
+                    clearedText = '';
+                }
+                clearedText += char;
+            }
+
+        }
+
+        return clearedText;
+
+        // MUST IMPLEMENTED if(dbType == 'mysql'){ } else if(dbType == 'pg'){ } else
+        // if(dbType == 'mssql'){ }
+    }
+
 }

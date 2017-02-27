@@ -24,7 +24,7 @@ describe('MySQL 2 Basic Queries - Syntax Error', function () {
     });
 });
 
-describe('MySQL Procedure', function () {
+describe('MySQL Procedure ends with DELIMITER', function () {
     it('should return MySQL procedure', function () {
         var query: string = `DELIMITER //
 CREATE PROCEDURE country_hos
@@ -42,6 +42,118 @@ BEGIN
 END`;
         var result: Array<string> = TSParser.parse(query, 'mysql', ';');
         chai.expect(result).include(expectedResult, 'Returning result must include query itself.');
+    });
+});
+
+describe('MySQL Procedure with comment', function () {
+    it('should return MySQL procedure', function () {
+        var query: string = `-- DROP PROCEDURE IF EXISTS \`country_hos\`;
+DELIMITER $$
+CREATE PROCEDURE country_hos
+(IN con CHAR(20))
+BEGIN
+  SELECT Name, HeadOfState FROM Country
+  WHERE Continent = con;
+END
+$$`;
+       var expectedResult: Array<string> = [];
+        expectedResult.push(`CREATE PROCEDURE country_hos
+(IN con CHAR(20))
+BEGIN
+  SELECT Name, HeadOfState FROM Country
+  WHERE Continent = con;
+END`);
+        var result: Array<string> = TSParser.parse(query, 'mysql', ';');
+        chai.expect(result).have.members(expectedResult, 'Should be an array of string with 1 stored procedure and comment.');
+    });
+});
+
+describe('MySQL Procedures, queries and comments', function () {
+    it('should return MySQL procedure', function () {
+        var query: string = `-- DROP PROCEDURE IF EXISTS \`country_hos\`;
+DELIMITER $$
+CREATE PROCEDURE country_hos
+(IN con CHAR(20))
+BEGIN
+  SELECT Name, HeadOfState FROM Country
+  WHERE Continent = con;
+END
+$$
+DELIMITER ;
+SELECT * FROM users;
+SELECT * FROM user_details; -- COMMENT AREA
+-- ;
+-- DELIMITER $$
+DELIMITER //
+CREATE PROCEDURE country_hos_second
+(IN con CHAR(20))
+BEGIN
+  SELECT Name, HeadOfState FROM Country
+  WHERE Continent = con;
+END
+//`;
+       var expectedResult: Array<string> = [];
+        expectedResult.push(`CREATE PROCEDURE country_hos
+(IN con CHAR(20))
+BEGIN
+  SELECT Name, HeadOfState FROM Country
+  WHERE Continent = con;
+END`);
+        expectedResult.push('SELECT * FROM users');
+        expectedResult.push('SELECT * FROM user_details');
+        expectedResult.push(`CREATE PROCEDURE country_hos_second
+(IN con CHAR(20))
+BEGIN
+  SELECT Name, HeadOfState FROM Country
+  WHERE Continent = con;
+END`);
+        var result: Array<string> = TSParser.parse(query, 'mysql', ';');
+        chai.expect(result).have.members(expectedResult, 'Should be an array of string with 1 stored procedure and comment.');
+    });
+});
+
+describe('MySQL Procedures, queries and comments (2)', function () {
+    it('should return MySQL procedure', function () {
+        var query: string = `-- DROP PROCEDURE IF EXISTS \`country_hos\`;
+DELIMITER $$ -- comment
+CREATE PROCEDURE country_hos
+(IN con CHAR(20))
+BEGIN
+  SELECT Name, HeadOfState FROM Country
+  WHERE Continent = con;
+END
+$$
+DELIMITER ;
+SELECT * FROM users;
+SELECT * FROM user_details; -- COMMENT AREA
+-- ;
+-- DELIMITER $$
+DELIMITER //
+CREATE PROCEDURE country_hos_second
+(IN con CHAR(20))
+BEGIN
+  SELECT Name, HeadOfState FROM Country
+  WHERE Continent = con;
+END
+//`;
+       var expectedResult: Array<string> = [];
+        expectedResult.push(`-- comment
+CREATE PROCEDURE country_hos
+(IN con CHAR(20))
+BEGIN
+  SELECT Name, HeadOfState FROM Country
+  WHERE Continent = con;
+END`);
+        expectedResult.push('SELECT * FROM users');
+        expectedResult.push('SELECT * FROM user_details');
+        expectedResult.push(`CREATE PROCEDURE country_hos_second
+(IN con CHAR(20))
+BEGIN
+  SELECT Name, HeadOfState FROM Country
+  WHERE Continent = con;
+END`);
+        var result: Array<string> = TSParser.parse(query, 'mysql', ';');
+        chai.expect(result).have.members(expectedResult, 'Should be an array of string with 1 stored procedure and comment.');
     });
 });
 

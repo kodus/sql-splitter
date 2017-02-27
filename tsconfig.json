@@ -6,9 +6,7 @@
             "node"
         ],
         "declaration": true,
-        "outDir": "lib/"
-    },
-    "files": [
-            "./src/index.ts"
-        ]
+        "outDir": "lib/",
+        "sourceMap": true
+    }
 }
