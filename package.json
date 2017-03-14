@@ -5,11 +5,11 @@
   "main": "lib/src/index.js",
   "typings": "lib/src/index",
   "files": [
-        "lib/src/index.d.ts",
-        "lib/src/index.js"
+    "lib/src/index.d.ts",
+    "lib/src/index.js"
   ],
   "scripts": {
-    "test": "mocha lib/test"
+    "test": "gulp default"
   },
   "repository": {
     "type": "git",
@@ -35,10 +35,23 @@
   },
   "homepage": "https://github.com/TeamSQL/SQL-Statement-Parser#readme",
   "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/jquery": "^2.0.33",
+    "@types/mocha": "^2.2.32",
     "@types/node": "*",
     "chai": "^3.5.0",
     "chai-things": "^0.2.0",
+    "config": "1.25.1",
+    "gulp": "^3.9.1",
+    "gulp-clean": "^0.3.2",
+    "gulp-mocha": "^4.0.1",
+    "gulp-sourcemaps": "^2.4.1",
+    "gulp-tslint": "^7.1.0",
+    "gulp-typescript": "^3.1.5",
+    "gulp-uglify": "^2.0.1",
     "mocha": "^3.2.0",
-    "qunitjs": "^2.1.1"
+    "run-sequence": "^1.2.2",
+    "tslint": "^4.5.1",
+    "typescript": "^2.1.6"
   }
 }
