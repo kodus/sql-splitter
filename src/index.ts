@@ -1,17 +1,26 @@
-export class TSParser {
+import { IQuery } from "./core/interfaces/IQuery";
+import { QueryManager } from "./core/QueryManager";
+import { DatabaseType } from "./core/enums/DatabaseType";
+import { MySQLQuery } from "./mysql/MySQLQuery";
 
-    public static parse(query: string, dbType: string, delimiter: string): Array<string> {
-        let queries: Array<string> = [];
+export class TSParser {
+    public static databaseType: DatabaseType;
+    public static lastQueryEndingGlobalIndex: number;
+
+    public static parse(query: string, dbType: DatabaseType, delimiter: string): Array<IQuery> {
+        this.databaseType = dbType;
+        let queries: Array<IQuery> = [];
         let flag = true;
         let restOfQuery = null;
+        this.lastQueryEndingGlobalIndex = 0;
         while (flag) {
             if (restOfQuery == null) {
                 restOfQuery = query;
             }
-            let statementAndRest = this.getStatements(restOfQuery, dbType, delimiter);
+            let statementAndRest = this.getStatements(restOfQuery, delimiter);
 
-            let statement = statementAndRest[0];
-            if (statement != null && statement.trim() !== "") {
+            let statement: IQuery = statementAndRest[0];
+            if (statement != null && statement.Query !== null && statement.Query.trim() !== "") {
                 queries.push(statement);
             }
 
@@ -24,7 +33,7 @@ export class TSParser {
         return queries;
     }
 
-    private static getStatements(query: string, dbType: string, delimiter: string): Array<string> {
+    private static getStatements(query: string, delimiter: string): Array<any> {
         let charArray: Array<string> = Array.from(query);
         let previousChar: string = null;
         let nextChar: string = null;
@@ -35,7 +44,7 @@ export class TSParser {
         let isInTag = false;
         let tagChar: string = null;
 
-        let resultQueries: Array<string> = [];
+        let resultQueries: Array<any> = [];
         for (let index = 0; index < charArray.length; index++) {
 
             let char = charArray[index];
@@ -56,14 +65,14 @@ export class TSParser {
 
             // it's comment, go to next char
             if (((char === "#" && nextChar === " ") || (char === "-" && nextChar === "-") || (char === "/" && nextChar === "*"))
-            && isInString === false) {
+                && isInString === false) {
                 isInComment = true;
                 commentChar = char;
                 continue;
             }
             // it's end of comment, go to next
             if (isInComment === true && (((commentChar === "#" || commentChar === "-") && char === "\n") ||
-            (commentChar === "/" && (char === "*" && nextChar === "/")))) {
+                (commentChar === "/" && (char === "*" && nextChar === "/")))) {
                 isInComment = false;
                 commentChar = null;
                 continue;
@@ -77,13 +86,13 @@ export class TSParser {
             }
 
             if (char.toLowerCase() === "d" && isInComment === false && isInString === false) {
-                let delimiterResult = this.getDelimiter(index, query, dbType);
+                let delimiterResult = this.getDelimiter(index, query);
                 if (delimiterResult != null) {
                     // it's delimiter
                     let delimiterSymbol: string = delimiterResult[0];
                     let delimiterEndIndex: number = delimiterResult[1];
                     query = query.substring(delimiterEndIndex);
-                    resultQueries = this.getStatements(query, dbType, delimiterSymbol);
+                    resultQueries = this.getStatements(query, delimiterSymbol);
                     break;
                 }
             }
@@ -91,13 +100,13 @@ export class TSParser {
             if (char === "$" && isInComment === false && isInString === false) {
                 let queryUntilTagSymbol = query.substring(index);
                 if (isInTag === false) {
-                    let tagSymbolResult = this.getTag(queryUntilTagSymbol, dbType);
+                    let tagSymbolResult = this.getTag(queryUntilTagSymbol);
                     if (tagSymbolResult != null) {
                         isInTag = true;
                         tagChar = tagSymbolResult[0];
                     }
                 } else {
-                    let tagSymbolResult = this.getTag(queryUntilTagSymbol, dbType);
+                    let tagSymbolResult = this.getTag(queryUntilTagSymbol);
                     if (tagSymbolResult != null) {
                         let tagSymbol = tagSymbolResult[0];
                         let tagSymbolIndex = tagSymbolResult[1];
@@ -116,11 +125,10 @@ export class TSParser {
 
             // it's a query, continue until you get delimiter hit
             if (char.toLowerCase() === delimiter.toLowerCase() && isInString === false && isInComment === false && isInTag === false) {
-                if (this.isGoDelimiter(dbType, query, index) === false) {
+                if (this.isGoDelimiter(query, index) === false) {
                     continue;
                 }
                 let splittingIndex = index;
-                // if (delimiter == ";") {     splittingIndex = index + 1 }
                 resultQueries = this.getQueryParts(query, splittingIndex, delimiter);
                 break;
 
@@ -131,26 +139,31 @@ export class TSParser {
             if (query != null) {
                 query = query.trim();
             }
-            resultQueries.push(query, null);
+            let finalQuery = this.createQueryManager(query, 0, query.length);
+            resultQueries.push(finalQuery, null);
         }
 
         return resultQueries;
     }
 
-    private static getQueryParts(query: string, splittingIndex: number, delimiter: string): Array<string> {
+    private static getQueryParts(query: string, splittingIndex: number, delimiter: string): Array<any> {
         let statement: string = query.substring(0, splittingIndex);
-        let restOfQuery: string = query.substring(splittingIndex + delimiter.length);
-        let result: Array<string> = [];
+        let restOfQueryStartingIndex = splittingIndex + delimiter.length;
+        let restOfQuery: string = query.substring(restOfQueryStartingIndex);
+        let result: Array<any> = [];
         if (statement != null) {
             statement = statement.trim();
         }
-        result.push(statement);
+        let currentStatementGlobalEndingIndex = this.lastQueryEndingGlobalIndex + statement.length;
+        let queryManager = this.createQueryManager(statement, this.lastQueryEndingGlobalIndex, currentStatementGlobalEndingIndex);
+        this.lastQueryEndingGlobalIndex = restOfQueryStartingIndex;
+        result.push(queryManager);
         result.push(restOfQuery);
         return result;
     }
 
-    private static getDelimiter(index: number, query: string, dbType: string): Array<any> {
-        if (dbType === "mysql") {
+    private static getDelimiter(index: number, query: string): Array<any> {
+        if (this.databaseType === DatabaseType.MYSQL) {
             let delimiterKeyword = "delimiter ";
             let delimiterLength = delimiterKeyword.length;
             let parsedQueryAfterIndexOriginal = query.substring(index);
@@ -166,7 +179,7 @@ export class TSParser {
                 parsedQueryAfterIndex = parsedQueryAfterIndex.substring(0, indexOfNewLine);
                 parsedQueryAfterIndex = parsedQueryAfterIndex.substring(delimiterLength);
                 let delimiterSymbol = parsedQueryAfterIndex.trim();
-                delimiterSymbol = this.clearTextUntilComment(delimiterSymbol, dbType);
+                delimiterSymbol = this.clearTextUntilComment(delimiterSymbol);
                 if (delimiterSymbol != null) {
                     delimiterSymbol = delimiterSymbol.trim();
                     let delimiterSymbolEndIndex = parsedQueryAfterIndexOriginal.indexOf(delimiterSymbol) + index + delimiterSymbol.length;
@@ -184,8 +197,8 @@ export class TSParser {
         }
     }
 
-    private static getTag(query: string, dbType: string): Array<any> {
-        if (dbType === "pg") {
+    private static getTag(query: string): Array<any> {
+        if (this.databaseType === DatabaseType.POSTGRESQL) {
             let matchTag = query.match(/^(\$[a-zA-Z]*\$)/i);
             if (matchTag != null && matchTag.length > 1) {
                 let result: Array<any> = [];
@@ -201,8 +214,8 @@ export class TSParser {
 
     }
 
-    private static isGoDelimiter(dbType: string, query: string, index: number): boolean {
-        if (dbType === "mssql") {
+    private static isGoDelimiter(query: string, index: number): boolean {
+        if (this.databaseType === DatabaseType.MSSQL) {
             let match = /(?:\bgo\b\s*)/i.exec(query);
             if (match != null && match.index === index) {
                 return true;
@@ -212,7 +225,7 @@ export class TSParser {
         }
     }
 
-    private static clearTextUntilComment(text: string, dbType: string): string {
+    private static clearTextUntilComment(text: string): string {
         let previousChar: string = null;
         let nextChar: string = null;
         let charArray: Array<string> = Array.from(text);
@@ -240,6 +253,14 @@ export class TSParser {
         }
 
         return clearedText;
+    }
+
+    private static createQueryManager(query: string, startIndex: number, endIndex: number): IQuery {
+        if (this.databaseType === DatabaseType.MYSQL) {
+            return QueryManager.createQuery(MySQLQuery, query, startIndex, endIndex);
+        }
+
+        return null;
     }
 
 }

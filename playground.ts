@@ -1,6 +1,6 @@
 import {TSParser} from './src/index'
-
-
+import { IQuery } from "./src/core/interfaces/IQuery";
+import { DatabaseType } from "./src/core/enums/DatabaseType";
 // var query: string = `-- DROP PROCEDURE IF EXISTS \`country_hos\` DELIMITER !!;
 //       DELIMITER      $$   -- comment
 // CREATE PROCEDURE country_hos
@@ -24,20 +24,23 @@ import {TSParser} from './src/index'
 // END
 // //`;
 
-var query = `DELIMITER //
-CREATE PROCEDURE country_hos
-(IN con CHAR(20))
-BEGIN
-  SELECT Name, HeadOfState FROM Country
-  WHERE Continent = con;
-END //
-DELIMITER ;`;
+// var query = `DELIMITER //
+// CREATE PROCEDURE country_hos
+// (IN con CHAR(20))
+// BEGIN
+//   SELECT Name, HeadOfState FROM Country
+//   WHERE Continent = con;
+// END //
+// DELIMITER ;`;
 
-// var query = `SELECT * FROM router LIMIT 200`;
+var query = `SELECT * FROM router LIMIT 200; SELECT * FROM users;`;
 
 
-var result: Array<string> = TSParser.parse(query, 'mysql', ';');
+let result: Array<IQuery> = TSParser.parse(query, DatabaseType.MYSQL, ';');
+
+let q1 = query.substring(result[0].StartIndex, result[0].EndIndex);
+let q2 = query.substring(result[1].StartIndex, result[1].EndIndex);
 
 result.forEach(element => {
-            console.log(element +'\n--next--');
+            console.log(element);
         });
