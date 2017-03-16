@@ -6,31 +6,35 @@ import { QueryManager } from "../src/core/QueryManager";
 import { DatabaseType } from "../src/core/enums/DatabaseType";
 import { MySQLQuery } from "../src/mysql/MySQLQuery";
 
-// describe("MySQL 2 Basic Queries", function () {
-//     it("should return an array with 2 items", function () {
-//         let query = "SELECT * FROM users;SELECT * FROM user_details;";
-//         let expectedResult: Array<IQuery> = [];
-//         let query1 = "SELECT * FROM users";
-//         let queryManager1 = QueryManager.createQuery(MySQLQuery, query1, 0, query1.length);
-//         let query2 = "SELECT * FROM user_details";
-//         let queryManager2 = QueryManager.createQuery(MySQLQuery, query2, 0, query1.length);
-//         expectedResult.push(queryManager1);
-//         expectedResult.push(queryManager2);
-//         let result: Array<IQuery> = TSParser.parse(query, DatabaseType.MYSQL, ";");
-//         chai.expect(result).have.members(expectedResult, "Should be an array of string with 2 members.");
-//     });
-// });
+describe("MySQL 2 Basic Queries", function () {
+    it("should return an array with 2 items", function () {
+        let query = "SELECT * FROM users;SELECT * FROM user_details;";
+        let expectedResult: Array<IQuery> = [];
+        let query1 = "SELECT * FROM users";
+        let queryManager1 = QueryManager.createQuery(MySQLQuery, query1, 0, 19, null);
+        let query2 = "SELECT * FROM user_details";
+        let queryManager2 = QueryManager.createQuery(MySQLQuery, query2, 20, 46, null);
+        expectedResult.push(queryManager1);
+        expectedResult.push(queryManager2);
+        let result: Array<IQuery> = TSParser.parse(query, DatabaseType.MYSQL, ";");
+        chai.expect(result).to.be.deep.equal(expectedResult, "Should be an array of string with 2 members.");
+    });
+});
 
-// describe("MySQL 2 Basic Queries - Syntax Error", function () {
-//     it("should not return an array with 2 items", function () {
-//         let query = "SELECT * FROM users SELECT * FROM user_details;";
-//         let expectedResult: Array<string> = [];
-//         expectedResult.push("SELECT * FROM users");
-//         expectedResult.push("SELECT * FROM user_details");
-//         let result: Array<string> = TSParser.parse(query, "mysql", ";");
-//         chai.expect(result).not.have.members(expectedResult, "Should be an array of string with 2 members.");
-//     });
-// });
+describe("MySQL 2 Basic Queries - Syntax Error", function () {
+    it("should not return an array with 2 items", function () {
+        let query = "SELECT * FROM users SELECT * FROM user_details;";
+        let expectedResult: Array<IQuery> = [];
+         let query1 = "SELECT * FROM users";
+        let queryManager1 = QueryManager.createQuery(MySQLQuery, query1, 0, 19, null);
+        let query2 = "SELECT * FROM user_details";
+        let queryManager2 = QueryManager.createQuery(MySQLQuery, query2, 20, 46, null);
+        expectedResult.push(queryManager1);
+        expectedResult.push(queryManager2);
+        let result: Array<IQuery> = TSParser.parse(query, DatabaseType.MYSQL, ";");
+        chai.expect(result).not.to.be.deep.equal(expectedResult, "Should be an array of string with 2 members.");
+    });
+});
 
 // describe("MySQL Procedure ends with DELIMITER", function () {
 //     it("should return MySQL procedure", function () {

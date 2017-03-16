@@ -39,6 +39,7 @@
     "@types/jquery": "^2.0.33",
     "@types/mocha": "^2.2.32",
     "@types/node": "*",
+    "@types/lodash": "4.14.55",
     "chai": "^3.5.0",
     "chai-things": "^0.2.0",
     "config": "1.25.1",
@@ -53,5 +54,8 @@
     "run-sequence": "^1.2.2",
     "tslint": "^4.5.1",
     "typescript": "^2.1.6"
+  },
+  "dependencies": {
+    "lodash":"4.17.4"
   }
 }

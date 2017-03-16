@@ -33,7 +33,8 @@ import { DatabaseType } from "./src/core/enums/DatabaseType";
 // END //
 // DELIMITER ;`;
 
-var query = `SELECT * FROM router LIMIT 200; SELECT * FROM users;`;
+var query = `SELECT * FROM router -- deneme
+LIMIT 200; SELECT * FROM users;`;
 
 
 let result: Array<IQuery> = TSParser.parse(query, DatabaseType.MYSQL, ';');

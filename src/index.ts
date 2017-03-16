@@ -1,11 +1,16 @@
 import { IQuery } from "./core/interfaces/IQuery";
+import { IToken } from "./core/interfaces/IToken";
 import { QueryManager } from "./core/QueryManager";
+import { TokenManager } from "./core/TokenManager";
 import { DatabaseType } from "./core/enums/DatabaseType";
 import { MySQLQuery } from "./mysql/MySQLQuery";
+import { MySQLToken } from "./mysql/MySQLToken";
+import { TokenType } from "./core/enums/TokenType";
 
 export class TSParser {
     public static databaseType: DatabaseType;
     public static lastQueryEndingGlobalIndex: number;
+    public static tokenManager: IToken;
 
     public static parse(query: string, dbType: DatabaseType, delimiter: string): Array<IQuery> {
         this.databaseType = dbType;
@@ -13,6 +18,8 @@ export class TSParser {
         let flag = true;
         let restOfQuery = null;
         this.lastQueryEndingGlobalIndex = 0;
+        this.tokenManager = this.createEmptyToken();
+
         while (flag) {
             if (restOfQuery == null) {
                 restOfQuery = query;
@@ -29,7 +36,9 @@ export class TSParser {
                 break;
             }
         }
-
+        queries.forEach(element => {
+            element.BuildQueryHierarchy();
+        });
         return queries;
     }
 
@@ -43,8 +52,9 @@ export class TSParser {
         let stringChar: string = null;
         let isInTag = false;
         let tagChar: string = null;
-
+        let tokens: Array<IToken> = [];
         let resultQueries: Array<any> = [];
+        let token = "";
         for (let index = 0; index < charArray.length; index++) {
 
             let char = charArray[index];
@@ -123,13 +133,30 @@ export class TSParser {
                 }
             }
 
+            if((char === " " || char === "," ) && isInComment === false && isInString === false){
+                let tokenEndIndex = index;
+                let tokenStartIndex = tokenEndIndex - token.length;
+                let tokenObject = this.createToken(token, TokenType.UNKNOWN, tokenStartIndex, tokenEndIndex);
+                tokens.push(tokenObject);
+                token = "";
+            }
+            else if (isInComment === false && isInString === false) {
+                token = token + char;
+            }
+
+
             // it's a query, continue until you get delimiter hit
             if (char.toLowerCase() === delimiter.toLowerCase() && isInString === false && isInComment === false && isInTag === false) {
                 if (this.isGoDelimiter(query, index) === false) {
                     continue;
                 }
+                let tokenEndIndex = index;
+                let tokenStartIndex = tokenEndIndex - token.length;
+                let tokenObject = this.createToken(token, TokenType.UNKNOWN, tokenStartIndex, tokenEndIndex);
+                tokens.push(tokenObject);
+
                 let splittingIndex = index;
-                resultQueries = this.getQueryParts(query, splittingIndex, delimiter);
+                resultQueries = this.getQueryParts(query, splittingIndex, delimiter, tokens);
                 break;
 
             }
@@ -139,14 +166,14 @@ export class TSParser {
             if (query != null) {
                 query = query.trim();
             }
-            let finalQuery = this.createQueryManager(query, 0, query.length);
+            let finalQuery = this.createQuery(query, 0, query.length, tokens);
             resultQueries.push(finalQuery, null);
         }
 
         return resultQueries;
     }
 
-    private static getQueryParts(query: string, splittingIndex: number, delimiter: string): Array<any> {
+    private static getQueryParts(query: string, splittingIndex: number, delimiter: string, tokens: Array<IToken>): Array<any> {
         let statement: string = query.substring(0, splittingIndex);
         let restOfQueryStartingIndex = splittingIndex + delimiter.length;
         let restOfQuery: string = query.substring(restOfQueryStartingIndex);
@@ -155,7 +182,7 @@ export class TSParser {
             statement = statement.trim();
         }
         let currentStatementGlobalEndingIndex = this.lastQueryEndingGlobalIndex + statement.length;
-        let queryManager = this.createQueryManager(statement, this.lastQueryEndingGlobalIndex, currentStatementGlobalEndingIndex);
+        let queryManager = this.createQuery(statement, this.lastQueryEndingGlobalIndex, currentStatementGlobalEndingIndex, tokens);
         this.lastQueryEndingGlobalIndex = restOfQueryStartingIndex;
         result.push(queryManager);
         result.push(restOfQuery);
@@ -255,9 +282,25 @@ export class TSParser {
         return clearedText;
     }
 
-    private static createQueryManager(query: string, startIndex: number, endIndex: number): IQuery {
+    private static createQuery(query: string, startIndex: number, endIndex: number, tokens: Array<IToken>): IQuery {
         if (this.databaseType === DatabaseType.MYSQL) {
-            return QueryManager.createQuery(MySQLQuery, query, startIndex, endIndex);
+            return QueryManager.createQuery(MySQLQuery, query, startIndex, endIndex, tokens);
+        }
+
+        return null;
+    }
+
+    private static createEmptyToken(): IToken {
+        if (this.databaseType === DatabaseType.MYSQL) {
+            return TokenManager.createEmptyToken(MySQLToken);
+        }
+
+        return null;
+    }
+
+    private static createToken(token: string, type: TokenType, startIndex: number, endIndex: number): IToken {
+        if (this.databaseType === DatabaseType.MYSQL) {
+            return TokenManager.createToken(MySQLToken, token, type, startIndex, endIndex);
         }
 
         return null;
