@@ -9,5 +9,5 @@ export interface IQuery {
     EndIndex: number;
     Tokens: Array<IToken>;
     SubQueries: Array<IQuery>;
-    BuildQueryHierarchy(): void;
+    BuildQueryHierarchy(): IQuery;
 }

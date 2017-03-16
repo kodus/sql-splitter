@@ -20,6 +20,7 @@ export class MySQLToken implements IToken {
     public get getToken(): string {
         let _token = this.Token.trim();
         _token = this.Token.toLowerCase();
+        _token = _token.replace(/,/g, "");
         return _token;
     }
 

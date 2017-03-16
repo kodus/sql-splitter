@@ -15,6 +15,7 @@ export class TSParser {
     public static parse(query: string, dbType: DatabaseType, delimiter: string): Array<IQuery> {
         this.databaseType = dbType;
         let queries: Array<IQuery> = [];
+        let resultQueryOnjects: Array<IQuery> = [];
         let flag = true;
         let restOfQuery = null;
         this.lastQueryEndingGlobalIndex = 0;
@@ -36,10 +37,12 @@ export class TSParser {
                 break;
             }
         }
-        queries.forEach(element => {
-            element.BuildQueryHierarchy();
-        });
-        return queries;
+        for (let index = 0; index < queries.length; index++) {
+            let queryObject = queries[index];
+            queryObject = queryObject.BuildQueryHierarchy();
+            resultQueryOnjects.push(queryObject);
+        }
+        return resultQueryOnjects;
     }
 
     private static getStatements(query: string, delimiter: string): Array<any> {
@@ -133,12 +136,18 @@ export class TSParser {
                 }
             }
 
-            if((char === " " || char === "," ) && isInComment === false && isInString === false){
+            if ((char === " " || char === "," || char === ")" || char === "(") && isInComment === false && isInString === false){
+                if (char === "(") {
+                    token = token + char;
+                }
                 let tokenEndIndex = index;
                 let tokenStartIndex = tokenEndIndex - token.length;
                 let tokenObject = this.createToken(token, TokenType.UNKNOWN, tokenStartIndex, tokenEndIndex);
                 tokens.push(tokenObject);
                 token = "";
+                if (char === ")") {
+                    token = token + char;
+                }
             }
             else if (isInComment === false && isInString === false) {
                 token = token + char;

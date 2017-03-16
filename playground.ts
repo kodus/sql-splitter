@@ -33,12 +33,20 @@ import { DatabaseType } from "./src/core/enums/DatabaseType";
 // END //
 // DELIMITER ;`;
 
-var query = `SELECT * FROM router -- deneme
-LIMIT 200; SELECT * FROM users;`;
 
+// -----
+
+// var query = `SELECT * FROM router -- deneme
+// LIMIT 200; SELECT * FROM users;`;
+
+// var query = `SELECT rid, rdate,   rname FROM router -- deneme
+// LIMIT 200; SELECT * FROM users;`;
+
+var query = `SELECT name, lname FROM (SELECT name, lname, age FROM users_backup) as t 
+INNER JOIN  photos p ON p.name = t.name WHERE t.age > 18`;
 
 let result: Array<IQuery> = TSParser.parse(query, DatabaseType.MYSQL, ';');
-
+console.log(JSON.stringify(result));
 let q1 = query.substring(result[0].StartIndex, result[0].EndIndex);
 let q2 = query.substring(result[1].StartIndex, result[1].EndIndex);
 
