@@ -1,22 +1,21 @@
-# TSParser / SQL Statement Parser
-A simple parser to split multiple statement SQL queries to separated statements for MySQL, PostgreSQL and Microsoft SQL Server
+# SQL Statement Splitter
+
+A simple parser to split multiple statement SQL queries to separated statements for MySQL, PostgreSQL and Microsoft SQL Server.
+
+This is an *unofficial* PHP port of [SQL-Statement-Parser by TeamSQL](https://github.com/TeamSQL/SQL-Statement-Parser).
 
 # What does it do and which database engines are supported?
+
 It supports MySQL, PostgreSQL and Microsoft SQL Server. Our parser splits multi-statement SQL queries into single statements.
 
-# Install via npm
+# Install via Composer
 
-`npm install --save tsparser`
+    composer install
 
-# Import TSParser to your project
+# Usage
 
-`import {TSParser} from 'TSParser'`
-
-# TSParser.parse() function description
-```
-static parse(query: string, dbType: string, delimiter: string): Array<string> {
-        ...
-    }
+```php
+// TODO
 ```
 
 It expects 3 parameters ;

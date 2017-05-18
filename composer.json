@@ -1,0 +1,25 @@
+{
+    "name": "kodus/sql-splitter",
+    "description": "A simple parser to split multiple statement SQL queries to seperated statements for MySQL, PostgreSQL and Microsoft SQL Server",
+    "authors": [
+        {
+            "name": "Can Abacigil",
+            "email": "abacigil@gmail.com",
+            "homepage": "https://teamsql.io/",
+            "role": "Developer of original NPM package"
+        },
+        {
+            "name": "Rasmus Schultz",
+            "email": "rasc@jfmedier.dk",
+            "role": "Developer of this PHP port"
+        }
+    ],
+    "require": {
+        "mindplay/testies": "^0.3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kodus\\": "src/"
+        }
+    }
+}

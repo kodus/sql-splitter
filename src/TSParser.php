@@ -1,12 +1,14 @@
 <?php
 
-class TSParser
+namespace Kodus;
+
+abstract class TSParser
 {
     /**
      * @param string $query
      * @param string $dbType
      * @param string $delimiter
-     * 
+     *
      * @returns string[]
      */
     public static function parse(string $query, string $dbType, string $delimiter) {
@@ -50,12 +52,8 @@ class TSParser
         $resultQueries = [];
         for ($index = 0; $index < count($charArray); $index++) {
             $char = $charArray[$index];
-            if ($index > 0) {
-                $previousChar = $charArray[$index - 1];
-            }
-            if ($index < count($charArray)) {
-                $nextChar = $charArray[$index + 1];
-            }
+            $previousChar = $index > 0 ? $charArray[$index - 1] : null;
+            $nextChar = $index < count($charArray) - 1 ? $charArray[$index + 1] : null;
             // it's in string, go to next char
             if ($previousChar != '\\' && ($char == '\'' || $char == '"') && $isInString == false && $isInComment == false) {
                 $isInString = true;
@@ -69,7 +67,7 @@ class TSParser
                 continue;
             }
             // it's end of comment, go to next
-            if ($isInComment == true && ((($commentChar == '#' || $commentChar == '-') && $char == '\n') || ($commentChar == '/' && ($char == '*' && $nextChar == '/')))) {
+            if ($isInComment == true && ((($commentChar == '#' || $commentChar == '-') && $char == "\n") || ($commentChar == '/' && ($char == '*' && $nextChar == '/')))) {
                 $isInComment = false;
                 $commentChar = null;
                 continue;
@@ -112,12 +110,12 @@ class TSParser
             }
             if (strlen($delimiter) > 1 && array_key_exists($index + strlen($delimiter) - 1, $charArray)) {
                 for ($i = $index + 1; $i < $index + strlen($delimiter); $i++) {
-                    $char += $charArray[$i];
+                    $char .= $charArray[$i];
                 }
             }
             // it's a query, continue until you get delimiter hit
             if (strtolower($char) == strtolower($delimiter) && $isInString == false && $isInComment == false && $isInTag == false) {
-                if (self::isGoDelimiter($dbType, $query, $index) == false) {
+                if (! self::isGoDelimiter($dbType, $query, $index)) {
                     continue;
                 }
                 $splittingIndex = $index;
@@ -131,7 +129,7 @@ class TSParser
                 $query = trim($query);
             }
             $resultQueries[] = $query;
-            $resultQueries[] = null; // TODO really??
+            $resultQueries[] = null;
         }
         return $resultQueries;
     }
@@ -168,13 +166,13 @@ class TSParser
             $delimiterLength = strlen($delimiterKeyword);
             $parsedQueryAfterIndexOriginal = substr($query, $index);
             $indexOfDelimiterKeyword = strpos(strtolower($parsedQueryAfterIndexOriginal), $delimiterKeyword);
-            if ($indexOfDelimiterKeyword == 0) {
+            if ($indexOfDelimiterKeyword === 0) {
                 $parsedQueryAfterIndex = substr($query, $index);
                 $indexOfNewLine = strpos($parsedQueryAfterIndex, "\n");
                 if ($indexOfNewLine == -1) {
                     $indexOfNewLine = strlen($query);
                 }
-                $parsedQueryAfterIndex = $parsedQueryAfterIndex.substr(0, $indexOfNewLine);
+                $parsedQueryAfterIndex = substr($parsedQueryAfterIndex, 0, $indexOfNewLine);
                 $parsedQueryAfterIndex = substr($parsedQueryAfterIndex, $delimiterLength);
                 $delimiterSymbol = trim($parsedQueryAfterIndex);
                 $delimiterSymbol = self::clearTextUntilComment($delimiterSymbol, $dbType);
@@ -214,11 +212,11 @@ class TSParser
      */
     private static function isGoDelimiter(string $dbType, string $query, int $index) {
         if ($dbType == 'mssql') {
-            if (preg_match('/(?:\bgo\b\s*)/i', '  GO', $matches, PREG_OFFSET_CAPTURE) === 1) {
+            if (preg_match('/(?:\bgo\b\s*)/i', $query, $matches, PREG_OFFSET_CAPTURE) === 1) {
                 return $matches[0][1] === $index;
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -234,12 +232,11 @@ class TSParser
         $clearedText = null;
         for ($index = 0; $index < count($charArray); $index++) {
             $char = $charArray[$index];
-            if ($index > 0) {
-                $previousChar = $charArray[$index - 1];
-            }
-            if ($index < count($charArray)) {
-                $nextChar = $charArray[$index + 1];
-            }
+
+            $nextChar = $index < count($charArray) - 1
+                ? $charArray[$index + 1]
+                : null;
+
             if ((($char == '#' && $nextChar == ' ') || ($char == '-' && $nextChar == '-') || ($char == '/' && $nextChar == '*'))) {
                 break;
             }
@@ -247,7 +244,7 @@ class TSParser
                 if ($clearedText == null) {
                     $clearedText = '';
                 }
-                $clearedText += $char;
+                $clearedText .= $char;
             }
         }
         return $clearedText;
