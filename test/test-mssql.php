@@ -46,11 +46,11 @@ test('MSSQL Mutiple Procedures', function () {
 });
 
 test('MSSQL Procedure and SQL Queries', function () {
-    $query = "CREATE PROCEDURE dbo.uspGetAddress @City nvarchar(30)\nAS\nSELECT * \nFROM Person.Address\nWHERE City = @City;\nGO\nSELECT * FROM users;\nGO\nSELECT * FROM user_details;";
+    $query = "CREATE PROCEDURE dbo.uspGetAddress @City nvarchar(30)\nAS\nSELECT * \nFROM Person.Address\nWHERE City = @City\nGO\nSELECT * FROM users\nGO\nSELECT * FROM user_details";
     $expectedResult = [
-        "CREATE PROCEDURE dbo.uspGetAddress @City nvarchar(30)\nAS\nSELECT * \nFROM Person.Address\nWHERE City = @City;",
-        "SELECT * FROM users;",
-        "SELECT * FROM user_details;",
+        "CREATE PROCEDURE dbo.uspGetAddress @City nvarchar(30)\nAS\nSELECT * \nFROM Person.Address\nWHERE City = @City",
+        "SELECT * FROM users",
+        "SELECT * FROM user_details",
     ];
     $result = SQLSplitter::splitMSSQL($query);
     eq($result, $expectedResult, 'Should be an array of string with 1 stored procedure and 2 queries.');
