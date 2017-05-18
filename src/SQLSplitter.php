@@ -8,13 +8,13 @@ namespace Kodus;
  */
 abstract class SQLSplitter
 {
-    const DB_MYSQL    = "mysql";
-    const DB_MSSQL    = "sqlsrv";
-    const DB_POSTGRES = "pgsql";
+    const DB_MYSQL = "mysql";
+    const DB_MSSQL = "sqlsrv";
+    const DB_PGSQL = "pgsql";
 
     /**
-     * @param string $sql SQL file body
-     * @param string $delimiter
+     * @param string $sql       SQL file body
+     * @param string $delimiter optional delimiter (defaults to ";")
      *
      * @return string[] list of SQL statements
      */
@@ -24,8 +24,8 @@ abstract class SQLSplitter
     }
 
     /**
-     * @param string $sql SQL file body
-     * @param string $delimiter
+     * @param string $sql       SQL file body
+     * @param string $delimiter optional delimiter (defaults to "GO")
      *
      * @return string[] list of SQL statements
      */
@@ -35,26 +35,31 @@ abstract class SQLSplitter
     }
 
     /**
-     * @param string $sql SQL file body
-     * @param string $delimiter
+     * @param string $sql       SQL file body
+     * @param string $delimiter optional delimiter (defaults to ";")
      *
      * @return string[] list of SQL statements
      */
     public static function splitPostgreSQL(string $sql, string $delimiter = ";")
     {
-        return self::split(self::DB_POSTGRES, $sql, $delimiter);
+        return self::split(self::DB_PGSQL, $sql, $delimiter);
     }
 
     /**
-     * @param string $dbType one of the DB_* constants
-     * @param string $sql    SQL file body
-     * @param string $delimiter
+     * @param string      $dbType    one of the DB_* constants
+     * @param string      $sql       SQL file body
+     * @param string|null $delimiter optional delimiter (or NULL to use the default of the given $dbType)
      *
      * @return string[] list of SQL statements
      */
-    public static function split(string $dbType, string $sql, string $delimiter)
+    public static function split(string $dbType, string $sql, string $delimiter = null)
     {
-        assert(in_array($dbType, [self::DB_MSSQL, self::DB_MYSQL, self::DB_POSTGRES]));
+        assert(in_array($dbType, [self::DB_MSSQL, self::DB_MYSQL, self::DB_PGSQL]));
+
+        if ($delimiter === null) {
+            $delimiter = $dbType === self::DB_MSSQL ? "GO" : ";";
+        }
+
         $queries = [];
         $flag = true;
         $restOfQuery = null;
@@ -245,7 +250,7 @@ abstract class SQLSplitter
      */
     private static function getTag(string $query, string $dbType)
     {
-        if ($dbType == self::DB_POSTGRES) {
+        if ($dbType == self::DB_PGSQL) {
             if (preg_match('/^(\$[a-zA-Z]*\$)/i', $query, $matches) === 1) {
                 $tagSymbol = trim($matches[0]);
                 $indexOfCmd = strpos($query, $tagSymbol);
