@@ -2,22 +2,65 @@
 
 namespace Kodus;
 
+/**
+ * This class is a pseudo-namespace for a set of functions that split an SQL file
+ * into individual SQL statements.
+ */
 abstract class SQLSplitter
 {
+    const DB_MYSQL    = "mysql";
+    const DB_MSSQL    = "sqlsrv";
+    const DB_POSTGRES = "pgsql";
+
     /**
-     * @param string $query
-     * @param string $dbType
+     * @param string $sql SQL file body
      * @param string $delimiter
      *
-     * @returns string[]
+     * @return string[] list of SQL statements
      */
-    public static function split(string $query, string $dbType, string $delimiter) {
+    public static function splitMySQL(string $sql, string $delimiter = ";")
+    {
+        return self::split(self::DB_MYSQL, $sql, $delimiter);
+    }
+
+    /**
+     * @param string $sql SQL file body
+     * @param string $delimiter
+     *
+     * @return string[] list of SQL statements
+     */
+    public static function splitMSSQL(string $sql, string $delimiter = "GO")
+    {
+        return self::split(self::DB_MSSQL, $sql, $delimiter);
+    }
+
+    /**
+     * @param string $sql SQL file body
+     * @param string $delimiter
+     *
+     * @return string[] list of SQL statements
+     */
+    public static function splitPostgreSQL(string $sql, string $delimiter = ";")
+    {
+        return self::split(self::DB_POSTGRES, $sql, $delimiter);
+    }
+
+    /**
+     * @param string $dbType one of the DB_* constants
+     * @param string $sql    SQL file body
+     * @param string $delimiter
+     *
+     * @return string[] list of SQL statements
+     */
+    public static function split(string $dbType, string $sql, string $delimiter)
+    {
+        assert(in_array($dbType, [self::DB_MSSQL, self::DB_MYSQL, self::DB_POSTGRES]));
         $queries = [];
         $flag = true;
         $restOfQuery = null;
         while ($flag) {
             if ($restOfQuery == null) {
-                $restOfQuery = $query;
+                $restOfQuery = $sql;
             }
             $statementAndRest = self::getStatements($restOfQuery, $dbType, $delimiter);
             $statement = $statementAndRest[0];
@@ -29,6 +72,7 @@ abstract class SQLSplitter
                 break;
             }
         }
+
         return $queries;
     }
 
@@ -39,7 +83,8 @@ abstract class SQLSplitter
      *
      * @return string[]
      */
-    private static function getStatements(string $query, string $dbType, string $delimiter) {
+    private static function getStatements(string $query, string $dbType, string $delimiter)
+    {
         $charArray = self::toArray($query);
         $previousChar = null;
         $nextChar = null;
@@ -96,8 +141,7 @@ abstract class SQLSplitter
                         $isInTag = true;
                         $tagChar = $tagSymbolResult[0];
                     }
-                }
-                else {
+                } else {
                     $tagSymbolResult = self::getTag($queryUntilTagSymbol, $dbType);
                     if ($tagSymbolResult != null) {
                         $tagSymbol = $tagSymbolResult[0];
@@ -131,17 +175,19 @@ abstract class SQLSplitter
             $resultQueries[] = $query;
             $resultQueries[] = null;
         }
+
         return $resultQueries;
     }
 
     /**
      * @param string $query
-     * @param int $splittingIndex
+     * @param int    $splittingIndex
      * @param string $delimiter
      *
      * @return string[]
      */
-    private static function getQueryParts(string $query, int $splittingIndex, string $delimiter) {
+    private static function getQueryParts(string $query, int $splittingIndex, string $delimiter)
+    {
         $statement = substr($query, 0, $splittingIndex);
         $restOfQuery = substr($query, $splittingIndex + strlen($delimiter));
         $result = [];
@@ -150,18 +196,20 @@ abstract class SQLSplitter
         }
         $result[] = $statement;
         $result[] = $restOfQuery;
+
         return $result;
     }
 
     /**
-     * @param int $index
+     * @param int    $index
      * @param string $query
      * @param string $dbType
      *
      * @return array|null returns a tuple [string $delimiter, int $endIndex] (or NULL if not matched)
      */
-    private static function getDelimiter(int $index, string $query, string $dbType) {
-        if ($dbType == 'mysql') {
+    private static function getDelimiter(int $index, string $query, string $dbType)
+    {
+        if ($dbType == self::DB_MYSQL) {
             $delimiterKeyword = 'delimiter ';
             $delimiterLength = strlen($delimiterKeyword);
             $parsedQueryAfterIndexOriginal = substr($query, $index);
@@ -178,11 +226,14 @@ abstract class SQLSplitter
                 $delimiterSymbol = self::clearTextUntilComment($delimiterSymbol, $dbType);
                 if ($delimiterSymbol != null) {
                     $delimiterSymbol = trim($delimiterSymbol);
-                    $delimiterSymbolEndIndex = strpos($parsedQueryAfterIndexOriginal, $delimiterSymbol) + $index + strlen($delimiterSymbol);
+                    $delimiterSymbolEndIndex = strpos($parsedQueryAfterIndexOriginal,
+                            $delimiterSymbol) + $index + strlen($delimiterSymbol);
+
                     return [$delimiterSymbol, $delimiterSymbolEndIndex];
                 }
             }
         }
+
         return null;
     }
 
@@ -192,30 +243,35 @@ abstract class SQLSplitter
      *
      * @return array|null returns a tuple [$tagSymbol, $indexOfCmd] (or NULL if not matched)
      */
-    private static function getTag(string $query, string $dbType) {
-        if ($dbType == 'pg') {
+    private static function getTag(string $query, string $dbType)
+    {
+        if ($dbType == self::DB_POSTGRES) {
             if (preg_match('/^(\$[a-zA-Z]*\$)/i', $query, $matches) === 1) {
                 $tagSymbol = trim($matches[0]);
                 $indexOfCmd = strpos($query, $tagSymbol);
+
                 return [$tagSymbol, $indexOfCmd];
             }
         }
+
         return null;
     }
 
     /**
      * @param string $dbType
      * @param string $query
-     * @param int $index
+     * @param int    $index
      *
      * @return bool
      */
-    private static function isGoDelimiter(string $dbType, string $query, int $index) {
-        if ($dbType == 'mssql') {
+    private static function isGoDelimiter(string $dbType, string $query, int $index)
+    {
+        if ($dbType == self::DB_MSSQL) {
             if (preg_match('/(?:\bgo\b\s*)/i', $query, $matches, PREG_OFFSET_CAPTURE) === 1) {
                 return $matches[0][1] === $index;
             }
         }
+
         return true;
     }
 
@@ -225,7 +281,8 @@ abstract class SQLSplitter
      *
      * @return string
      */
-    private static function clearTextUntilComment(string $text, string $dbType) {
+    private static function clearTextUntilComment(string $text, string $dbType)
+    {
         $previousChar = null;
         $nextChar = null;
         $charArray = self::toArray($text);
@@ -239,14 +296,14 @@ abstract class SQLSplitter
 
             if ((($char == '#' && $nextChar == ' ') || ($char == '-' && $nextChar == '-') || ($char == '/' && $nextChar == '*'))) {
                 break;
-            }
-            else {
+            } else {
                 if ($clearedText == null) {
                     $clearedText = '';
                 }
                 $clearedText .= $char;
             }
         }
+
         return $clearedText;
         // MUST IMPLEMENTED if(dbType == 'mysql'){ } else if(dbType == 'pg'){ } else
         // if(dbType == 'mssql'){ }
