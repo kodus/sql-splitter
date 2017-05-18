@@ -26,7 +26,7 @@ It expects 3 parameters ;
         
 *delimiter*: semicolon (;) for MySQL and PostgreSQL, 'GO' for Microsoft SQL Server
 
-TSParser can parse;
+SQLSplitter can parse;
         
 *SQL Queries*
         
@@ -40,7 +40,7 @@ TSParser can parse;
 In MySQL, semicolon (;) is default delimiter.
 ```
     var mysqlQueriesBasic : string = 'SELECT * FROM users;SELECT * FROM user_details;'
-    var mysqlStatements = TSParser.parse(mysqlQueriesBasic, 'mysql', ';');
+    var mysqlStatements = SQLSplitter.parse(mysqlQueriesBasic, 'mysql', ';');
     mysqlStatements.forEach(statement => {
             console.log(statement + '\n-----------');
         });
@@ -84,7 +84,7 @@ In PostgreSQL, semicolon (;) is default delimiter.
 
 ```
     var postgreSQLQueriesBasic : string = 'SELECT * FROM users;SELECT * FROM user_details;'
-    var pgStatements = TSParser.parse(postgreSQLQueriesBasic, 'pg', ';');
+    var pgStatements = SQLSplitter.parse(postgreSQLQueriesBasic, 'pg', ';');
     pgStatements.forEach(statement => {
             console.log(statement + '\n-----------');
     });
@@ -128,7 +128,7 @@ In Microsoft SQL Server, GO keyword is default delimiter.
 
 ```
     var postgreSQLQueriesBasic : string = ‘SELECT * FROM users GO SELECT * FROM user_details;’
-    var pgStatements = TSParser.parse(postgreSQLQueriesBasic, ‘pg’, ‘;’);
+    var pgStatements = SQLSplitter.parse(postgreSQLQueriesBasic, ‘pg’, ‘;’);
     pgStatements.forEach(statement => {
             console.log(statement + ‘\n—————‘);
     });

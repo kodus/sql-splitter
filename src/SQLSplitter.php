@@ -2,7 +2,7 @@
 
 namespace Kodus;
 
-abstract class TSParser
+abstract class SQLSplitter
 {
     /**
      * @param string $query
@@ -11,7 +11,7 @@ abstract class TSParser
      *
      * @returns string[]
      */
-    public static function parse(string $query, string $dbType, string $delimiter) {
+    public static function split(string $query, string $dbType, string $delimiter) {
         $queries = [];
         $flag = true;
         $restOfQuery = null;
