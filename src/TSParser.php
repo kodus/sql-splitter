@@ -19,11 +19,11 @@ class TSParser
             }
             $statementAndRest = self::getStatements($restOfQuery, $dbType, $delimiter);
             $statement = $statementAndRest[0];
-            if ($statement != null && $statement.trim() != "") {
-                $queries.push($statement);
+            if ($statement != null && trim($statement) != "") {
+                $queries[] = $statement;
             }
             $restOfQuery = $statementAndRest[1];
-            if ($restOfQuery == null || $restOfQuery.trim() == "") {
+            if ($restOfQuery == null || trim($restOfQuery) == "") {
                 break;
             }
         }
@@ -38,7 +38,7 @@ class TSParser
      * @return string[]
      */
     private static function getStatements(string $query, string $dbType, string $delimiter) {
-        $charArray = Array.from($query);
+        $charArray = self::toArray($query);
         $previousChar = null;
         $nextChar = null;
         $isInComment = false;
@@ -48,12 +48,12 @@ class TSParser
         $isInTag = false;
         $tagChar = null;
         $resultQueries = [];
-        for ($index = 0; $index < $charArray.length; $index++) {
+        for ($index = 0; $index < count($charArray); $index++) {
             $char = $charArray[$index];
             if ($index > 0) {
                 $previousChar = $charArray[$index - 1];
             }
-            if ($index < $charArray.length) {
+            if ($index < count($charArray)) {
                 $nextChar = $charArray[$index + 1];
             }
             // it's in string, go to next char
@@ -80,18 +80,18 @@ class TSParser
                 $stringChar = null;
                 continue;
             }
-            if ($char.toLowerCase() == 'd' && $isInComment == false && $isInString == false) {
+            if (strtolower($char) == 'd' && $isInComment == false && $isInString == false) {
                 $delimiterResult = self::getDelimiter($index, $query, $dbType);
                 if ($delimiterResult != null) {
                     // it's delimiter
                     list($delimiterSymbol, $delimiterEndIndex) = $delimiterResult;
-                    $query = $query.substr($delimiterEndIndex);
+                    $query = substr($query, $delimiterEndIndex);
                     $resultQueries = self::getStatements($query, $dbType, $delimiterSymbol);
                     break;
                 }
             }
             if ($char == "$" && $isInComment == false && $isInString == false) {
-                $queryUntilTagSymbol = $query.substr($index);
+                $queryUntilTagSymbol = substr($query, $index);
                 if ($isInTag == false) {
                     $tagSymbolResult = self::getTag($queryUntilTagSymbol, $dbType);
                     if ($tagSymbolResult != null) {
@@ -110,13 +110,13 @@ class TSParser
                     }
                 }
             }
-            if ($delimiter.length > 1 && $charArray[$index + $delimiter.length - 1] != undefined) {
-                for ($i = $index + 1; $i < $index + $delimiter.length; $i++) {
+            if (strlen($delimiter) > 1 && array_key_exists($index + strlen($delimiter) - 1, $charArray)) {
+                for ($i = $index + 1; $i < $index + strlen($delimiter); $i++) {
                     $char += $charArray[$i];
                 }
             }
             // it's a query, continue until you get delimiter hit
-            if ($char.toLowerCase() == $delimiter.toLowerCase() && $isInString == false && $isInComment == false && $isInTag == false) {
+            if (strtolower($char) == strtolower($delimiter) && $isInString == false && $isInComment == false && $isInTag == false) {
                 if (self::isGoDelimiter($dbType, $query, $index) == false) {
                     continue;
                 }
@@ -126,11 +126,12 @@ class TSParser
                 break;
             }
         }
-        if ($resultQueries.length == 0) {
+        if (count($resultQueries) == 0) {
             if ($query != null) {
-                $query = $query.trim();
+                $query = trim($query);
             }
-            $resultQueries.push($query, null);
+            $resultQueries[] = $query;
+            $resultQueries[] = null; // TODO really??
         }
         return $resultQueries;
     }
@@ -143,14 +144,14 @@ class TSParser
      * @return string[]
      */
     private static function getQueryParts(string $query, int $splittingIndex, string $delimiter) {
-        $statement = $query.substr(0, $splittingIndex);
-        $restOfQuery = $query.substr($splittingIndex + $delimiter.length);
+        $statement = substr($query, 0, $splittingIndex);
+        $restOfQuery = substr($query, $splittingIndex + strlen($delimiter));
         $result = [];
         if ($statement != null) {
-            $statement = $statement.trim();
+            $statement = trim($statement);
         }
-        $result.push($statement);
-        $result.push($restOfQuery);
+        $result[] = $statement;
+        $result[] = $restOfQuery;
         return $result;
     }
 
@@ -164,37 +165,27 @@ class TSParser
     private static function getDelimiter(int $index, string $query, string $dbType) {
         if ($dbType == 'mysql') {
             $delimiterKeyword = 'delimiter ';
-            $delimiterLength = $delimiterKeyword.length;
-            $parsedQueryAfterIndexOriginal = $query.substr($index);
-            $indexOfDelimiterKeyword = $parsedQueryAfterIndexOriginal
-                .toLowerCase()
-                .indexOf($delimiterKeyword);
+            $delimiterLength = strlen($delimiterKeyword);
+            $parsedQueryAfterIndexOriginal = substr($query, $index);
+            $indexOfDelimiterKeyword = strpos(strtolower($parsedQueryAfterIndexOriginal), $delimiterKeyword);
             if ($indexOfDelimiterKeyword == 0) {
-                $parsedQueryAfterIndex = $query.substr($index);
-                $indexOfNewLine = $parsedQueryAfterIndex.indexOf('\n');
+                $parsedQueryAfterIndex = substr($query, $index);
+                $indexOfNewLine = strpos($parsedQueryAfterIndex, "\n");
                 if ($indexOfNewLine == -1) {
-                    $indexOfNewLine = $query.length;
+                    $indexOfNewLine = strlen($query);
                 }
                 $parsedQueryAfterIndex = $parsedQueryAfterIndex.substr(0, $indexOfNewLine);
-                $parsedQueryAfterIndex = $parsedQueryAfterIndex.substr($delimiterLength);
-                $delimiterSymbol = $parsedQueryAfterIndex.trim();
+                $parsedQueryAfterIndex = substr($parsedQueryAfterIndex, $delimiterLength);
+                $delimiterSymbol = trim($parsedQueryAfterIndex);
                 $delimiterSymbol = self::clearTextUntilComment($delimiterSymbol, $dbType);
                 if ($delimiterSymbol != null) {
-                    $delimiterSymbol = $delimiterSymbol.trim();
-                    $delimiterSymbolEndIndex = $parsedQueryAfterIndexOriginal.indexOf($delimiterSymbol) + $index + $delimiterSymbol.length;
-                    $result = [];
-                    $result.push($delimiterSymbol);
-                    $result.push($delimiterSymbolEndIndex);
-                    return $result;
+                    $delimiterSymbol = trim($delimiterSymbol);
+                    $delimiterSymbolEndIndex = strpos($parsedQueryAfterIndexOriginal, $delimiterSymbol) + $index + strlen($delimiterSymbol);
+                    return [$delimiterSymbol, $delimiterSymbolEndIndex];
                 }
-                else {
-                    return null;
-                }
-            }
-            else {
-                return null;
             }
         }
+        return null;
     }
 
     /**
@@ -205,19 +196,13 @@ class TSParser
      */
     private static function getTag(string $query, string $dbType) {
         if ($dbType == 'pg') {
-            $matchTag = $query.match(/^(\$[a-zA-Z]*\$)/i);
-            if ($matchTag != null && $matchTag.length > 1) {
-                $result = [];
-                $tagSymbol = $matchTag[1].trim();
-                $indexOfCmd = $query.indexOf($tagSymbol);
-                $result.push($tagSymbol);
-                $result.push($indexOfCmd);
-                return $result;
-            }
-            else {
-                return null;
+            if (preg_match('/^(\$[a-zA-Z]*\$)/i', $query, $matches) === 1) {
+                $tagSymbol = trim($matches[0]);
+                $indexOfCmd = strpos($query, $tagSymbol);
+                return [$tagSymbol, $indexOfCmd];
             }
         }
+        return null;
     }
 
     /**
@@ -229,14 +214,11 @@ class TSParser
      */
     private static function isGoDelimiter(string $dbType, string $query, int $index) {
         if ($dbType == 'mssql') {
-            $match = /(?:\bgo\b\s*)/i.exec($query);
-            if ($match != null && $match.index == $index) {
-                return true;
-            }
-            else {
-                return false;
+            if (preg_match('/(?:\bgo\b\s*)/i', '  GO', $matches, PREG_OFFSET_CAPTURE) === 1) {
+                return $matches[0][1] === $index;
             }
         }
+        return false;
     }
 
     /**
@@ -248,14 +230,14 @@ class TSParser
     private static function clearTextUntilComment(string $text, string $dbType) {
         $previousChar = null;
         $nextChar = null;
-        $charArray = Array.from($text);
+        $charArray = self::toArray($text);
         $clearedText = null;
-        for ($index = 0; $index < $charArray.length; $index++) {
+        for ($index = 0; $index < count($charArray); $index++) {
             $char = $charArray[$index];
             if ($index > 0) {
                 $previousChar = $charArray[$index - 1];
             }
-            if ($index < $charArray.length) {
+            if ($index < count($charArray)) {
                 $nextChar = $charArray[$index + 1];
             }
             if ((($char == '#' && $nextChar == ' ') || ($char == '-' && $nextChar == '-') || ($char == '/' && $nextChar == '*'))) {
@@ -271,5 +253,15 @@ class TSParser
         return $clearedText;
         // MUST IMPLEMENTED if(dbType == 'mysql'){ } else if(dbType == 'pg'){ } else
         // if(dbType == 'mssql'){ }
+    }
+
+    /**
+     * @param string $query
+     *
+     * @return string[]
+     */
+    private static function toArray(string $query): array
+    {
+        return preg_split('//u', $query, -1, PREG_SPLIT_NO_EMPTY);
     }
 }
