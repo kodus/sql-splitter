@@ -79,14 +79,14 @@ export class TSParser {
                     // it's delimiter
                     var $delimiterSymbol : string = $delimiterResult[0];
                     var $delimiterEndIndex : number = $delimiterResult[1];
-                    $query = $query.substring($delimiterEndIndex);
+                    $query = $query.substr($delimiterEndIndex);
                     $resultQueries = this.getStatements($query, $dbType, $delimiterSymbol);
                     break;
                 }
             }
 
             if ($char == "$" && $isInComment == false && $isInString == false) {
-                var $queryUntilTagSymbol = $query.substring($index);
+                var $queryUntilTagSymbol = $query.substr($index);
                 if ($isInTag == false) {
                     var $tagSymbolResult = this.getTag($queryUntilTagSymbol, $dbType);
                     if ($tagSymbolResult != null) {
@@ -135,8 +135,8 @@ export class TSParser {
     }
 
     private static getQueryParts($query : string, $splittingIndex : number, $delimiter : string) : Array < string > {
-        var $statement: string = $query.substring(0, $splittingIndex);
-        var $restOfQuery: string = $query.substring($splittingIndex + $delimiter.length);
+        var $statement: string = $query.substr(0, $splittingIndex);
+        var $restOfQuery: string = $query.substr($splittingIndex + $delimiter.length);
         var $result: Array < string > = [];
         if ($statement != null) {
             $statement = $statement.trim();
@@ -150,18 +150,18 @@ export class TSParser {
         if($dbType == 'mysql') {
             var $delimiterKeyword = 'delimiter ';
             var $delimiterLength = $delimiterKeyword.length;
-            var $parsedQueryAfterIndexOriginal = $query.substring($index);
+            var $parsedQueryAfterIndexOriginal = $query.substr($index);
             var $indexOfDelimiterKeyword = $parsedQueryAfterIndexOriginal
                 .toLowerCase()
                 .indexOf($delimiterKeyword);
             if ($indexOfDelimiterKeyword == 0) {
-                var $parsedQueryAfterIndex = $query.substring($index);
+                var $parsedQueryAfterIndex = $query.substr($index);
                 var $indexOfNewLine = $parsedQueryAfterIndex.indexOf('\n');
                 if($indexOfNewLine == -1){
                     $indexOfNewLine = $query.length;
                 }
-                $parsedQueryAfterIndex = $parsedQueryAfterIndex.substring(0, $indexOfNewLine);
-                $parsedQueryAfterIndex = $parsedQueryAfterIndex.substring($delimiterLength);
+                $parsedQueryAfterIndex = $parsedQueryAfterIndex.substr(0, $indexOfNewLine);
+                $parsedQueryAfterIndex = $parsedQueryAfterIndex.substr($delimiterLength);
                 var $delimiterSymbol = $parsedQueryAfterIndex.trim();
                 $delimiterSymbol = this.clearTextUntilComment($delimiterSymbol, $dbType);
                 if ($delimiterSymbol != null) {
