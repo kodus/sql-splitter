@@ -9,7 +9,8 @@
         "lib/src/index.js"
   ],
   "scripts": {
-    "test": "mocha lib/test"
+    "build": "tsc",
+    "test": "npm run build && mocha lib/test"
   },
   "repository": {
     "type": "git",
@@ -35,10 +36,13 @@
   },
   "homepage": "https://github.com/TeamSQL/SQL-Statement-Parser#readme",
   "devDependencies": {
+    "@types/chai": "^3.5.2",
+    "@types/mocha": "^2.2.41",
     "@types/node": "*",
     "chai": "^3.5.0",
     "chai-things": "^0.2.0",
     "mocha": "^3.2.0",
-    "qunitjs": "^2.1.1"
+    "qunitjs": "^2.1.1",
+    "typescript": "^2.3.2"
   }
 }
