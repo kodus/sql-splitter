@@ -1,6 +1,7 @@
 {
     "name": "kodus/sql-splitter",
-    "description": "A simple parser to split multiple statement SQL queries to seperated statements for MySQL, PostgreSQL and Microsoft SQL Server",
+    "description": "A simple facility to split SQL files into individual queries - supports MySQL, PostgreSQL and Microsoft SQL Server",
+    "license": "MIT",
     "authors": [
         {
             "name": "Can Abacigil",
