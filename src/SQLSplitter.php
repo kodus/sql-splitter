@@ -99,7 +99,7 @@ abstract class SQLSplitter
         $stringChar = null;
         $isInTag = false;
         $tagChar = null;
-        $resultQueries = [];
+
         for ($index = 0; $index < count($charArray); $index++) {
             $char = $charArray[$index];
             $previousChar = $index > 0 ? $charArray[$index - 1] : null;
@@ -134,8 +134,7 @@ abstract class SQLSplitter
                     // it's delimiter
                     list($delimiterSymbol, $delimiterEndIndex) = $delimiterResult;
                     $query = substr($query, $delimiterEndIndex);
-                    $resultQueries = self::getStatements($query, $dbType, $delimiterSymbol);
-                    break;
+                    return self::getStatements($query, $dbType, $delimiterSymbol);
                 }
             }
             if ($char == "$" && $isInComment == false && $isInString == false) {
@@ -169,19 +168,15 @@ abstract class SQLSplitter
                 }
                 $splittingIndex = $index;
                 // if (delimiter == ";") {     $splittingIndex = index + 1 }
-                $resultQueries = self::getQueryParts($query, $splittingIndex, $delimiter);
-                break;
+                return self::getQueryParts($query, $splittingIndex, $delimiter);
             }
-        }
-        if (count($resultQueries) == 0) {
-            if ($query != null) {
-                $query = trim($query);
-            }
-            $resultQueries[] = $query;
-            $resultQueries[] = null;
         }
 
-        return $resultQueries;
+        if ($query != null) {
+            $query = trim($query);
+        }
+
+        return [$query, null];
     }
 
     /**
@@ -195,14 +190,10 @@ abstract class SQLSplitter
     {
         $statement = substr($query, 0, $splittingIndex);
         $restOfQuery = substr($query, $splittingIndex + strlen($delimiter));
-        $result = [];
         if ($statement != null) {
             $statement = trim($statement);
         }
-        $result[] = $statement;
-        $result[] = $restOfQuery;
-
-        return $result;
+        return [$statement, $restOfQuery];
     }
 
     /**
