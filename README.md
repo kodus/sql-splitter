@@ -4,6 +4,9 @@ A simple parser to split SQL (and/or DDL) files into individual SQL queries.
 
 This is an *unofficial* PHP port of [SQL-Statement-Parser by TeamSQL](https://github.com/TeamSQL/SQL-Statement-Parser).
 
+[![PHP Version](https://img.shields.io/badge/php-7.0%2B-blue.svg)](https://packagist.org/packages/kodus/sql-splitter)
+[![Build Status](https://travis-ci.org/kodus/sql-splitter.svg?branch=master)](https://travis-ci.org/kodus/sql-splitter)
+
 ### Install via Composer
 
     composer require kodus/sql-splitter

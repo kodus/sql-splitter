@@ -1,5 +1,6 @@
 {
     "name": "kodus/sql-splitter",
+    "type": "library",
     "description": "A simple facility to split SQL files into individual queries - supports MySQL, PostgreSQL and Microsoft SQL Server",
     "license": "MIT",
     "authors": [
@@ -16,6 +17,9 @@
         }
     ],
     "require": {
+        "php": "^7.0"
+    },
+    "require-dev": {
         "mindplay/testies": "^0.3.0"
     },
     "autoload": {
