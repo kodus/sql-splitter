@@ -128,17 +128,17 @@ abstract class SQLSplitter
                 $stringChar = null;
                 continue;
             }
-            if (strtolower($char) == 'd' && $isInComment == false && $isInString == false) {
+            if (mb_strtolower($char) == 'd' && $isInComment == false && $isInString == false) {
                 $delimiterResult = self::getDelimiter($index, $query, $dbType);
                 if ($delimiterResult != null) {
                     // it's delimiter
                     list($delimiterSymbol, $delimiterEndIndex) = $delimiterResult;
-                    $query = substr($query, $delimiterEndIndex);
+                    $query = mb_substr($query, $delimiterEndIndex);
                     return self::getStatements($query, $dbType, $delimiterSymbol);
                 }
             }
             if ($char == "$" && $isInComment == false && $isInString == false) {
-                $queryUntilTagSymbol = substr($query, $index);
+                $queryUntilTagSymbol = mb_substr($query, $index);
                 if ($isInTag == false) {
                     $tagSymbolResult = self::getTag($queryUntilTagSymbol, $dbType);
                     if ($tagSymbolResult != null) {
@@ -156,13 +156,13 @@ abstract class SQLSplitter
                     }
                 }
             }
-            if (strlen($delimiter) > 1 && array_key_exists($index + strlen($delimiter) - 1, $charArray)) {
-                for ($i = $index + 1; $i < $index + strlen($delimiter); $i++) {
+            if (mb_strlen($delimiter) > 1 && array_key_exists($index + mb_strlen($delimiter) - 1, $charArray)) {
+                for ($i = $index + 1; $i < $index + mb_strlen($delimiter); $i++) {
                     $char .= $charArray[$i];
                 }
             }
             // it's a query, continue until you get delimiter hit
-            if (strtolower($char) == strtolower($delimiter) && $isInString == false && $isInComment == false && $isInTag == false) {
+            if (mb_strtolower($char) == mb_strtolower($delimiter) && $isInString == false && $isInComment == false && $isInTag == false) {
                 if (! self::isGoDelimiter($dbType, $query, $index)) {
                     continue;
                 }
@@ -188,8 +188,8 @@ abstract class SQLSplitter
      */
     private static function getQueryParts(string $query, int $splittingIndex, string $delimiter)
     {
-        $statement = substr($query, 0, $splittingIndex);
-        $restOfQuery = substr($query, $splittingIndex + strlen($delimiter));
+        $statement = mb_substr($query, 0, $splittingIndex);
+        $restOfQuery = mb_substr($query, $splittingIndex + mb_strlen($delimiter));
         if ($statement != null) {
             $statement = trim($statement);
         }
@@ -207,23 +207,23 @@ abstract class SQLSplitter
     {
         if ($dbType == self::DB_MYSQL) {
             $delimiterKeyword = 'delimiter ';
-            $delimiterLength = strlen($delimiterKeyword);
-            $parsedQueryAfterIndexOriginal = substr($query, $index);
-            $indexOfDelimiterKeyword = strpos(strtolower($parsedQueryAfterIndexOriginal), $delimiterKeyword);
+            $delimiterLength = mb_strlen($delimiterKeyword);
+            $parsedQueryAfterIndexOriginal = mb_substr($query, $index);
+            $indexOfDelimiterKeyword = mb_strpos(mb_strtolower($parsedQueryAfterIndexOriginal), $delimiterKeyword);
             if ($indexOfDelimiterKeyword === 0) {
-                $parsedQueryAfterIndex = substr($query, $index);
-                $indexOfNewLine = strpos($parsedQueryAfterIndex, "\n");
+                $parsedQueryAfterIndex = mb_substr($query, $index);
+                $indexOfNewLine = mb_strpos($parsedQueryAfterIndex, "\n");
                 if ($indexOfNewLine == -1) {
-                    $indexOfNewLine = strlen($query);
+                    $indexOfNewLine = mb_strlen($query);
                 }
-                $parsedQueryAfterIndex = substr($parsedQueryAfterIndex, 0, $indexOfNewLine);
-                $parsedQueryAfterIndex = substr($parsedQueryAfterIndex, $delimiterLength);
+                $parsedQueryAfterIndex = mb_substr($parsedQueryAfterIndex, 0, $indexOfNewLine);
+                $parsedQueryAfterIndex = mb_substr($parsedQueryAfterIndex, $delimiterLength);
                 $delimiterSymbol = trim($parsedQueryAfterIndex);
                 $delimiterSymbol = self::clearTextUntilComment($delimiterSymbol, $dbType);
                 if ($delimiterSymbol != null) {
                     $delimiterSymbol = trim($delimiterSymbol);
-                    $delimiterSymbolEndIndex = strpos($parsedQueryAfterIndexOriginal,
-                            $delimiterSymbol) + $index + strlen($delimiterSymbol);
+                    $delimiterSymbolEndIndex = mb_strpos($parsedQueryAfterIndexOriginal,
+                            $delimiterSymbol) + $index + mb_strlen($delimiterSymbol);
 
                     return [$delimiterSymbol, $delimiterSymbolEndIndex];
                 }
@@ -244,7 +244,7 @@ abstract class SQLSplitter
         if ($dbType == self::DB_PGSQL) {
             if (preg_match('/^(\$[a-zA-Z]*\$)/i', $query, $matches) === 1) {
                 $tagSymbol = trim($matches[0]);
-                $indexOfCmd = strpos($query, $tagSymbol);
+                $indexOfCmd = mb_strpos($query, $tagSymbol);
 
                 return [$tagSymbol, $indexOfCmd];
             }
